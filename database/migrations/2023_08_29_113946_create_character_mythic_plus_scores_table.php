@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('character_mythic_plus_scores', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('character_id');
-            $table->string('overall');
+            $table->double('overall');
             $table->string('overall_color');
-            $table->string('tank');
+            $table->double('tank');
             $table->string('tank_color');
-            $table->string('healer');
+            $table->double('healer');
             $table->string('healer_color');
-            $table->string('dps');
+            $table->double('dps');
             $table->string('dps_color');
             $table->timestamps();
 

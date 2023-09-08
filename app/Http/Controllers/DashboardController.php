@@ -15,7 +15,6 @@ class DashboardController extends Controller
                 ->myCharacters()
                 ->with(['characterMythicPlusScore'])
                 ->take(8)
-                ->orderByDesc('updated_at')
                 ->get()
         ]);
     }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Auth\LoginWithBattleNetController;
+use App\Http\Controllers\Auth\BattleNetLoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CharacterSearchController;
@@ -23,8 +23,8 @@ Route::get('/', function () {
     return Inertia::render('Auth/Login');
 });
 
-Route::get('login/redirect', [LoginWithBattleNetController::class, 'redirect']);
-Route::get('auth/callback', [LoginWithBattleNetController::class, 'callback'])->name('login-with-battle-net.callback');
+Route::get('login/redirect', [BattleNetLoginController::class, 'redirect']);
+Route::get('auth/callback', [BattleNetLoginController::class, 'callback'])->name('login-with-battle-net.callback');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
