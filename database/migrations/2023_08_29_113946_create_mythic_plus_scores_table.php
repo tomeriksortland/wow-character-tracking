@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('character_mythic_plus_scores', function (Blueprint $table) {
+        Schema::create('mythic_plus_scores', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('character_id');
-            $table->double('overall');
+            $table->double('overall')->index();
             $table->string('overall_color');
             $table->double('tank');
             $table->string('tank_color');
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('character_mythic_plus_scores');
+        Schema::dropIfExists('mythic_plus_scores');
     }
 };

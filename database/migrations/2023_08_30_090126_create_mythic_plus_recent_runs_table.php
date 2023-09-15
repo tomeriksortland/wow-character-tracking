@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('character_mythic_plus_highest_level_runs', function (Blueprint $table) {
+        Schema::create('mythic_plus_recent_runs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('character_id');
             $table->string('dungeon');
@@ -40,6 +40,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('character_mythic_plus_highest_level_runs');
+        Schema::dropIfExists('mythic_plus_recent_runs');
     }
 };

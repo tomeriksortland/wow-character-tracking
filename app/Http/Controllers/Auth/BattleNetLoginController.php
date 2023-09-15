@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Jobs\CreateOrUpdateCharacterData;
 use App\Models\User;
+use App\Models\UserJob;
 use App\Services\BattleNetService;
 use App\Services\CharacterSearchService;
 use App\Services\RaiderIOService;
@@ -20,13 +21,19 @@ class BattleNetLoginController extends Controller
         return Socialite::driver('battlenet')->scopes(['wow.profile'])->redirect();
     }
 
-    public function callback(BattleNetService $battleNetService, RaiderIOService $raiderIOService)
+    public function callback(BattleNetService $battleNetService)
     {
         $user = $battleNetService->getUser();
 
         Auth::login($user);
 
         CreateOrUpdateCharacterData::dispatch($user);
+        UserJob::create([
+            'user_id' => $user->id,
+            'status' => 'pending'
+        ]);
+
+
 
         return redirect(route('dashboard.index'));
     }

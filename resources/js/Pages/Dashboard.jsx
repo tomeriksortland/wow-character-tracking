@@ -4,22 +4,25 @@ import CharacterCard from "@/Components/CharacterCard.jsx";
 import {useEffect, useState} from "react";
 import axios from "axios";
 
-export default function Dashboard({ auth, myCharacters }) {
+export default function Dashboard({ auth, myCharacters, allCharactersFetched }) {
 
+    const [allCharactersFetchedStatus, setAllCharactersFetchedStatus] = useState(allCharactersFetched)
     const [characters, setCharacters] = useState(myCharacters)
 
     useEffect(() => {
         const fetchAndSetCharacters = async () => {
+
             const response = await axios.get(`api/v1/users/${auth.user.id}/characters`)
-            if (response.data.length) {
-                setCharacters(response.data);
+            if (response.data.jobStatus === "completed") {
+                setAllCharactersFetchedStatus(response.data.jobStatus)
+                setCharacters(response.data.myCharacters);
                 return Promise.resolve();
             }
 
-            setTimeout(fetchAndSetCharacters, 1000);
+            setTimeout(fetchAndSetCharacters, 2000);
         }
 
-        if(characters.length !== 8) fetchAndSetCharacters()
+        if(allCharactersFetchedStatus !== 'completed') fetchAndSetCharacters()
     })
 
     return (
@@ -30,15 +33,20 @@ export default function Dashboard({ auth, myCharacters }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="flex flex-wrap w-full mt-10 mx-auto">
-                        { characters.map((character, index) => (
+                    <div className="flex flex-wrap w-full mt-10 mx-auto justify-center">
+                        {allCharactersFetchedStatus !== "completed" ? (
+                            <div className="flex items-center">
+                                <h1 className="text-white text-2xl">Loading characters</h1>
+                                <span className="loading loading-spinner loading-lg text-info ml-4"></span>
+                            </div>
+                        ) : (
+                         characters.map((character, index) => (
                             <div key={index} className="w-1/4 px-2 mb-2">
                                 <CharacterCard
                                     character={character}
-                                    score={character.character_mythic_plus_score}
                                 />
                             </div>
-                        ))}
+                        )))}
                     </div>
                 </div>
             </div>

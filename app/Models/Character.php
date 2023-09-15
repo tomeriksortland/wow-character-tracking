@@ -13,18 +13,23 @@ class Character extends Model
 
     protected $guarded = [];
 
-    public function users()
+    public function user()
     {
-        return $this->belongsToMany(User::class);
+        return $this->belongsTo(User::class);
     }
 
-    public function characterMythicPlusScore() : HasOne
+    public function characterSearches()
     {
-        return $this->hasOne(CharacterMythicPlusScore::class);
+        return $this->hasMany(CharacterSearch::class);
     }
 
-    public function characterMythicPlusHighestLevelRuns() : HasMany
+    public function mythicPlusScore() : HasOne
     {
-        return $this->hasMany(CharacterMythicPlusHighestLevelRun::class);
+        return $this->hasOne(MythicPlusScore::class);
+    }
+
+    public function mythicPlusHighestLevelRuns() : HasMany
+    {
+        return $this->hasMany(MythicPlusHighestLevelRun::class);
     }
 }

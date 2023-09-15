@@ -39,6 +39,12 @@ class User extends Authenticatable
 
     public function characterSearches()
     {
-        return $this->belongsToMany(Character::class);
+        return $this->hasMany(CharacterSearch::class);
+    }
+
+
+    public function userJob()
+    {
+        return $this->belongsTo(UserJob::class)->first();
     }
 }
