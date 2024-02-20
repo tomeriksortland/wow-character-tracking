@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_jobs', function (Blueprint $table) {
+        Schema::create('api_error_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('status');
+            $table->string('response_code');
+            $table->text('response_message');
+            $table->string('exception_code');
+            $table->text('exception_message');
+            $table->text('query_parameters');
             $table->timestamps();
-
-            $table->foreign('user_id')->references('id')->on('users');
         });
     }
 
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_jobs');
+        Schema::dropIfExists('api_error_logs');
     }
 };

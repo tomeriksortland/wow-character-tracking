@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('mythic_plus_highest_level_runs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('character_id');
+            $table->unsignedBigInteger('character_id')->index();
             $table->string('dungeon');
             $table->string('key_level');
             $table->string('completion_time');

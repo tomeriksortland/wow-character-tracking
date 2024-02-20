@@ -28,6 +28,11 @@ class Character extends Model
         return $this->hasOne(MythicPlusScore::class);
     }
 
+    public function mythicPlusPreviousScore() : HasOne
+    {
+        return $this->hasOne(MythicPlusPreviousScore::class);
+    }
+
     public function mythicPlusHighestLevelRuns() : HasMany
     {
         return $this->hasMany(MythicPlusHighestLevelRun::class);

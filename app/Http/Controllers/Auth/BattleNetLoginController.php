@@ -2,15 +2,12 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UpdateCharacters;
 use App\Http\Controllers\Controller;
-use App\Jobs\CreateOrUpdateCharacterData;
-use App\Models\User;
-use App\Models\UserJob;
+use App\Models\CharacterUpdate;
 use App\Services\BattleNetService;
-use App\Services\CharacterSearchService;
 use App\Services\RaiderIOService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
 use Laravel\Socialite\Facades\Socialite;
 
 class BattleNetLoginController extends Controller
@@ -27,13 +24,12 @@ class BattleNetLoginController extends Controller
 
         Auth::login($user);
 
-        CreateOrUpdateCharacterData::dispatch($user);
-        UserJob::create([
+        $characterUpdate = CharacterUpdate::create([
             'user_id' => $user->id,
             'status' => 'pending'
         ]);
 
-
+        UpdateCharacters::dispatch($user, $characterUpdate);
 
         return redirect(route('dashboard.index'));
     }

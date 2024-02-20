@@ -29,7 +29,7 @@ export default function Authenticated({ user, header, children }) {
                                 <NavLink href={route('dashboard.index')} active={route().current('dashboard.index')}>
                                     Dashboard
                                 </NavLink>
-                                <NavLink href={route('character-search.index')} active={route().current('search-for-characters.index')}>
+                                <NavLink href={route('character-search.index')} active={route().current('character-search.index')}>
                                     Character Search
                                 </NavLink>
                             </div>

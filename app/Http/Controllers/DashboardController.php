@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Character;
-use App\Models\User;
-use App\Models\UserJob;
+use App\Models\CharacterUpdate;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index() : InertiaResponse
     {
         return Inertia::render('Dashboard', [
             'myCharacters' => Character::query()
@@ -19,7 +19,7 @@ class DashboardController extends Controller
                 ->take(8)
                 ->orderByDesc('overall')
                 ->get(),
-            'allCharactersFetched' => UserJob::where('user_id', Auth()->id())->first()->status
+            'allCharactersFetched' => CharacterUpdate::where('user_id', Auth()->id())->first()->status
         ]);
     }
 }

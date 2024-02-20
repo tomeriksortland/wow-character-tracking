@@ -2,45 +2,53 @@
 
 namespace App\Services;
 
+use App\Models\ApiErrorLog;
+use App\Models\ApiLog;
 use App\Models\Character;
 use App\Models\CharacterSearch;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Client\Pool;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
-use Inertia\Inertia;
 
 class RaiderIOService
 {
 
-    public function fetchCharacterData(string $region, string $realm, string $characterName) : \stdClass|RedirectResponse
+    public function fetchCharacterData(string $region, string $realm, string $characterName) : \stdClass
     {
         try {
             $response = Http::get('https://raider.io/api/v1/characters/profile', [
                 'region' => $region,
                 'realm' => $realm,
                 'name' => $characterName,
-                'fields' => 'mythic_plus_scores_by_season:current,mythic_plus_recent_runs,mythic_plus_highest_level_runs'
+                'fields' => 'mythic_plus_scores_by_season:season-df-3:season-df-2,mythic_plus_recent_runs,mythic_plus_highest_level_runs'
             ]);
 
+            ApiLog::create(
+                [
+                    'user_id' => Auth::id(),
+                    'response_code' => $response->status(),
+                    'response_message' => $response->status() == 200 ? 'response successful' : 'response error',
+                    'query_parameters' => $response->transferStats->getRequest()->getUri()->getQuery()
+                ]);
+
         } catch (Exception $exception) {
-            DB::insert(
-                "INSERT INTO api_logs (user_id, error_code, error_message) VALUES (?, ?, ?)",
-                [Auth::id(), $exception->getCode(), $exception->getMessage()]
+            ApiErrorLog::create(
+                [
+                    'user_id' => Auth::id(),
+                    'response_code' => $response->status(),
+                    'response_message' => $response->body(),
+                    'exception_code' => $exception->getCode(),
+                    'exception_message' => $exception->getMessage(),
+                    'query_parameters' => $response->transferStats->getRequest()->getUri()->getQuery()
+                ]
             );
         }
 
-        if (isset($response) && $response->failed()) {
-            return to_route('character-search.index', ['error' => $response->body()]);
-        }
-
         return json_decode($response->body());
-
     }
 
     public function storeOrUpdateCharacterDataWhenLoggingIn(User $user, mixed $data) : Character
@@ -70,7 +78,6 @@ class RaiderIOService
         $character->mythicPlusScore()->updateOrCreate(
             [
                 'character_id' => $character->id,
-                'overall' => $data->mythic_plus_scores_by_season[0]->segments->all->score
             ],
             [
                 'character_id' => $character->id,
@@ -82,6 +89,23 @@ class RaiderIOService
                 'healer_color' => $data->mythic_plus_scores_by_season[0]->segments->healer->color,
                 'dps' => $data->mythic_plus_scores_by_season[0]->segments->dps->score,
                 'dps_color' => $data->mythic_plus_scores_by_season[0]->segments->dps->color,
+            ]);
+
+        $character->mythicPlusPreviousScore()->updateOrCreate(
+            [
+                'character_id' => $character->id,
+            ],
+            [
+                'character_id' => $character->id,
+                'season' => $data->mythic_plus_scores_by_season[1]->season,
+                'overall' => $data->mythic_plus_scores_by_season[1]->segments->all->score,
+                'overall_color' => $data->mythic_plus_scores_by_season[1]->segments->all->color,
+                'tank' => $data->mythic_plus_scores_by_season[1]->segments->tank->score,
+                'tank_color' => $data->mythic_plus_scores_by_season[1]->segments->tank->color,
+                'healer' => $data->mythic_plus_scores_by_season[1]->segments->healer->score,
+                'healer_color' => $data->mythic_plus_scores_by_season[1]->segments->healer->color,
+                'dps' => $data->mythic_plus_scores_by_season[1]->segments->dps->score,
+                'dps_color' => $data->mythic_plus_scores_by_season[1]->segments->dps->color,
             ]);
 
         /*$i = 0;
@@ -111,9 +135,9 @@ class RaiderIOService
                     'character_id' => $character->id,
                     'dungeon' => $run->dungeon,
                     'key_level' => $run->mythic_level,
-                    'affix_one' => $run->affixes[0]->name,
-                    'affix_two' => $run->affixes[1]->name,
-                    'affix_three' => $run->affixes[2]->name,
+                    'affix_one' => Arr::get($run->affixes, 0)->name,
+                    'affix_two' => isset($run->affixes[1]) ? Arr::get($run->affixes, 1)->name : '',
+                    'affix_three' => isset($run->affixes[2]) ? Arr::get($run->affixes, 2)->name : '',
                     'completed_at' => $run->completed_at
                 ],
                 [
@@ -122,14 +146,14 @@ class RaiderIOService
                     'key_level' => $run->mythic_level,
                     'completion_time' => $run->clear_time_ms,
                     'dungeon_total_time' => $run->par_time_ms,
-                    'affix_one' => $run->affixes[0]->name,
-                    'affix_one_icon' => $run->affixes[0]->icon,
-                    'affix_two' => $run->affixes[1]->name,
-                    'affix_two_icon' => $run->affixes[1]->icon,
-                    'affix_three' => $run->affixes[2]->name,
-                    'affix_three_icon' => $run->affixes[2]->icon,
-                    'seasonal_affix' => $run->affixes[3]->name ?? '',
-                    'seasonal_affix_icon' => $run->affixes[3]->icon ?? '',
+                    'affix_one' => Arr::get($run->affixes, 0)->name,
+                    'affix_one_icon' => Arr::get($run->affixes, 0)->icon,
+                    'affix_two' => isset($run->affixes[1]) ? Arr::get($run->affixes, 1)->name : '',
+                    'affix_two_icon' => isset($run->affixes[1]) ? Arr::get($run->affixes, 1)->icon : '',
+                    'affix_three' => isset($run->affixes[2]) ? Arr::get($run->affixes, 2)->name : '',
+                    'affix_three_icon' => isset($run->affixes[2]) ? Arr::get($run->affixes, 2)->icon : '',
+                    'seasonal_affix' => isset($run->affixes[3]) ? $run->affixes[3]->name : '',
+                    'seasonal_affix_icon' => isset($run->affixes[3]) ? $run->affixes[3]->icon : '',
                     'run_id' => preg_match('/\/season-df-2\/([^\/-]+)/', $run->url, $matches) ? $matches[1] : null,
                     'run_url' => $run->url,
                     'completed_at' => Carbon::parse($run->completed_at)
@@ -167,7 +191,6 @@ class RaiderIOService
         $character->mythicPlusScore()->updateOrCreate(
             [
                 'character_id' => $character->id,
-                'overall' => $data->mythic_plus_scores_by_season[0]->segments->all->score
             ],
             [
                 'character_id' => $character->id,
@@ -179,6 +202,23 @@ class RaiderIOService
                 'healer_color' => $data->mythic_plus_scores_by_season[0]->segments->healer->color,
                 'dps' => $data->mythic_plus_scores_by_season[0]->segments->dps->score,
                 'dps_color' => $data->mythic_plus_scores_by_season[0]->segments->dps->color,
+            ]);
+
+        $character->mythicPlusPreviousScore()->updateOrCreate(
+            [
+                'character_id' => $character->id,
+            ],
+            [
+                'character_id' => $character->id,
+                'season' => $data->mythic_plus_scores_by_season[1]->season,
+                'overall' => $data->mythic_plus_scores_by_season[1]->segments->all->score,
+                'overall_color' => $data->mythic_plus_scores_by_season[1]->segments->all->color,
+                'tank' => $data->mythic_plus_scores_by_season[1]->segments->tank->score,
+                'tank_color' => $data->mythic_plus_scores_by_season[1]->segments->tank->color,
+                'healer' => $data->mythic_plus_scores_by_season[1]->segments->healer->score,
+                'healer_color' => $data->mythic_plus_scores_by_season[1]->segments->healer->color,
+                'dps' => $data->mythic_plus_scores_by_season[1]->segments->dps->score,
+                'dps_color' => $data->mythic_plus_scores_by_season[1]->segments->dps->color,
             ]);
 
         /*$i = 0;

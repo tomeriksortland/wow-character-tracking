@@ -94,10 +94,9 @@ export default function Index({auth, apierrors, lastSixCharacterSearches}) {
             </div>
             <div className="flex flex-wrap w-3/4 mt-10 mx-auto">
                 {lastSixCharacterSearches.map((character, index) => (
-                    <div key={index} className="w-1/3 px-2 mb-4">
+                    <div key={character.id} className="w-1/3 px-2 mb-4">
                         <CharacterCard
                             character={character}
-                            score={character.character_mythic_plus_score}
                         />
                     </div>
                 ))}

@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mythic_plus_scores', function (Blueprint $table) {
+        Schema::create('mythic_plus_previous_scores', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('character_id')->index();
-            $table->double('overall')->index();
+            $table->foreignId('character_id')->constrained();
+            $table->string('season');
+            $table->double('overall');
             $table->string('overall_color');
             $table->double('tank');
             $table->string('tank_color');
@@ -23,8 +24,6 @@ return new class extends Migration
             $table->double('dps');
             $table->string('dps_color');
             $table->timestamps();
-
-            $table->foreign('character_id')->references('id')->on('characters');
         });
     }
 
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mythic_plus_scores');
+        Schema::dropIfExists('mythic_plus_previous_scores');
     }
 };

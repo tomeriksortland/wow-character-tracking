@@ -8,7 +8,7 @@ use Laravel\Socialite\Facades\Socialite;
 
 class BattleNetService {
 
-    public function getUser()
+    public function getUser() : User
     {
         $battleNetUser = Socialite::driver('battlenet')->user();
 
@@ -21,6 +21,12 @@ class BattleNetService {
                 'access_token' => $battleNetUser->token
             ]);
             }
+
+        if($user->access_token !== $battleNetUser->token) {
+            $user->update([
+                'access_token' => $battleNetUser->token
+            ]);
+        }
 
         return $user;
     }

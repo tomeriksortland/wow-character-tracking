@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('api_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('status_code');
-            $table->string('error_message');
+            $table->string('response_code');
+            $table->text('response_message');
+            $table->text('query_parameters');
             $table->timestamps();
         });
     }
